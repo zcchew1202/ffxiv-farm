@@ -1,0 +1,25 @@
+{
+  "name": "ffxiv-farm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "xivapi-js": "^0.3.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zcchew1202/ffxiv-farm.git"
+  },
+  "author": "Zi Chien Chew",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zcchew1202/ffxiv-farm/issues"
+  },
+  "homepage": "https://github.com/zcchew1202/ffxiv-farm#readme"
+}
