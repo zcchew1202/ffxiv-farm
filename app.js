@@ -4,53 +4,70 @@ var fcName = 'Kyng\'s Krew';
 var serverName = 'Midgardsormr';
 var mountName = 'Round Lanner'
 
+// todo: cache results & do periodic refresh
 // get mounts & minions along with each FC member
-function getChars(fcMembers) {
-    let mimo = null;
+async function getChars(fcMembers) {
+    let mimo = [];
+    let i = 0;
     try {
-        fcMembers.forEach(async element => {
-            mimo = await xiv.character.get(element.ID, { data: 'MIMO' });
-            return mimo;
-        });
+        for (let element of fcMembers) {
+            mimo = [...mimo, await xiv.character.get(element.ID, { data: 'MIMO' })];
+            console.log(`Current downloading ${element.Name} | total progress: ${i}/${fcMembers.length}`)
+            //console.log(mimo);
+            i += 1
+        }
+        // fcMembers.forEach(async element => {
+        //     mimo = [...mimo,await xiv.character.get(element.ID, { data: 'MIMO' })];
+        // });
+        return mimo;
     } catch (error) {
         console.error(error);
     }
 }
 
+async function allMounts() {
+
+}
+
 function hasMount(char, mountName) {
-    try {
-        char.Mounts.forEach(mount => {
-            if (mount.Name === mountName) {
-                return true;
-            }
-            return false;
-        })
-    } catch (error) {
-        console.log(error);
-    }
+    char.Mounts.forEach(mount => {
+        if (mount.Name === mountName) {
+            return true;
+        }
+        return false;
+    })
 }
 
 
 (async function () {
     try {
+        // let response1 = xiv.freecompany.search(fcName, { server: serverName }).then(res => console.log(res));
         let response = await xiv.freecompany.search(fcName, { server: serverName });
         let fcID = response.Results[0].ID;
         let fcData = await xiv.freecompany.get(fcID, { data: 'FCM' });
         let fcMembers = fcData.FreeCompanyMembers;
-        fcMembers.forEach(async element => {
-            const char = await xiv.character.get(element.ID, { data: 'MIMO' });
-            // console.log(char);
+        // let allMounts = await xiv.search('*',{indexes: 'Mount'});
+        // console.log(allMounts.Results);
+        let chars = await getChars(fcMembers);
+        // console.log('x is: ', x);
+        // fcMembers.forEach(async element => {
+        //     const char = await xiv.character.get(element.ID, { data: 'MIMO' });
+
+        // console.log(chars);
+        chars.forEach(char => {
             char.Mounts.forEach(mount => {
                 if (mount.Name === mountName) {
                     console.log(char.Character.Name + ' has ' + mountName);
                 }
-            });
-            // if (hasMount(char, mountName)) {
-            //     console.log(char.Character.Name + ' has ' + mountName);
-            // }
-            //filterByMount(chars)
-
+            }
+            );
         });
+        // if (hasMount(char, mountName)) {
+        //     console.log(char.Character.Name + ' has ' + mountName);
+        // }
+        //filterByMount(chars)
+
+        // });
     } catch (error) {
         console.error(error);
     }
