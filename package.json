@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "node-cache": "^5.1.2",
     "xivapi-js": "^0.3.0"
   },
   "devDependencies": {
