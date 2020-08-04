@@ -1,13 +1,15 @@
 const XIVAPI = require('xivapi-js');
 const NodeCache = require("node-cache");
+const express = require('express');
 const xiv = new XIVAPI({ private_key: '44bae903b3fc4128886e55a050709485dc38471f9d244919a5beb82844885da5' });
 var fcName = 'Kyng\'s Krew';
 var serverName = 'Midgardsormr';
-var mountName = 'Round Lanner'
+var mountName = 'Round Lanner';
+const app = express();
+const port = 3000;
 const cache = new NodeCache();
 
-// todo: cache results & do periodic refresh
-// {}
+// todo: add ttl to cache entries
 // get mounts & minions along with each FC member
 async function getChars(fcMembers) {
     let mimo = [];
@@ -23,37 +25,20 @@ async function getChars(fcMembers) {
             } else {
                 console.log('Char data already cached');
             }
-
-            //console.log(`Current downloading ${element.Name} | total progress: ${i}/${fcMembers.length}`)
-            //console.log(mimo);
         }
-        // fcMembers.forEach(async element => {
-        //     mimo = [...mimo,await xiv.character.get(element.ID, { data: 'MIMO' })];
-        // });
         return mimo;
     } catch (error) {
         console.error(error);
     }
 }
 
-function hasMount(char, mountName) {
-    char.Mounts.forEach(mount => {
-        if (mount.Name === mountName) {
-            return true;
-        }
-        return false;
-    })
-}
-
-
-(async function () {
+async function filterByMount() {
     try {
-        let response = await xiv.freecompany.search(fcName, { server: serverName });
-        let fcID = response.Results[0].ID;
-        let fcData = await xiv.freecompany.get(fcID, { data: 'FCM' });
-        let fcMembers = fcData.FreeCompanyMembers;
-
-        let chars = await getChars(fcMembers);
+        const response = await xiv.freecompany.search(fcName, { server: serverName });
+        const fcID = response.Results[0].ID;
+        const fcData = await xiv.freecompany.get(fcID, { data: 'FCM' });
+        const fcMembers = fcData.FreeCompanyMembers;
+        await getChars(fcMembers);
 
         let fcMemberNames = [];
         for (let fcMember of fcMembers) {
@@ -69,16 +54,19 @@ function hasMount(char, mountName) {
             }
         });
         console.log(filter);
-
-        chars.forEach(char => {
-            char.Mounts.forEach(mount => {
-                if (mount.Name === mountName) {
-                    console.log(char.Character.Name + ' has ' + mountName);
-                }
-            }
-            );
-        });
+        return filter;
     } catch (error) {
         console.error(error);
     }
+}
+
+(async function () {
+    const fcMembers = await filterByMount();
+    app.get('/', (req, res) => {
+        res.send(fcMembers);
+    });
 })();
+
+app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`)
+});
